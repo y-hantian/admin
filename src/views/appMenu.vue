@@ -13,8 +13,6 @@
             :collapse="isCollapse"
             :hide-timeout='1000'
             class="el-menu-vertical-demo"
-            @open="handleOpen"
-            @close="handleClose"
             background-color="#1D1E23"
             text-color="#fff"
             active-text-color="#f6ca9d">
@@ -43,46 +41,96 @@
                 <i v-else class="el-icon-s-unfold" @click="checkFold(1)"></i>
             </div>
             <div class="user_admin">
+                <i v-if="fullVal === 0" class="iconfont icon-quanping hidden-sm-and-down" @click="fullScreen"></i>
+                <i v-else class="iconfont icon-suoxiao hidden-sm-and-down" @click="narrow"></i>
+                <i class="iconfont icon-ziyuan"></i>
                 <img src="@/assets/avatar.gif">
-                <span>admin</span>
+                <el-dropdown @command="command" trigger="click">
+                    <span class="el-dropdown-link">
+                        admin<i class="el-icon-arrow-down el-icon--right"></i>
+                    </span>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item command='a'>修改密码</el-dropdown-item>
+                        <el-dropdown-item command='b'>退出登录</el-dropdown-item>
+                    </el-dropdown-menu>
+                    </el-dropdown>
             </div>
         </div>
         <router-view></router-view>
-        <el-dialog :visible.sync="dialogVisible" :show-close="false" width="60%">
-            <img src="@/assets/logo.png">
-            <el-menu
-                :default-active="$route.path"
-                :default-openeds="defaultOpen"
-                :unique-opened="true"
-                :router="true"
-                :collapse="isCollapse"
-                :hide-timeout='1000'
-                class="el-menu-vertical-demo"
-                @open="handleOpen"
-                @close="handleClose"
-                background-color="#1D1E23"
-                text-color="#fff"
-                active-text-color="#f6ca9d">
-                <el-submenu v-for="(item,index) in permissionRoutes"
-                            :key="index"
-                            :index="item.path">
-                    <template slot="title">
-                        <i class="iconfont" :class="item.meta.icon"></i>
-                        <span slot="title">{{item.meta.title}}</span>
-                    </template>
-                    <el-menu-item
-                        v-for="(el, idx) in item.children"
-                        :key="idx"
-                        :index="item.path + '/' + el.path">{{el.meta.title}}</el-menu-item>
-                </el-submenu>
-            </el-menu>
-        </el-dialog>
+        <!-- navMenu导航菜单 -->
+        <div class="dialogMenu">
+            <el-dialog class="dialogMenu" :visible.sync="dialogVisible" :show-close="false" width="60%">
+                <img src="@/assets/logo.png">
+                <el-menu
+                    :default-active="$route.path"
+                    :default-openeds="defaultOpen"
+                    :unique-opened="true"
+                    :router="true"
+                    :collapse="isCollapse"
+                    :hide-timeout='1000'
+                    class="el-menu-vertical-demo"
+                    background-color="#1D1E23"
+                    text-color="#fff"
+                    active-text-color="#f6ca9d">
+                    <el-submenu v-for="(item,index) in permissionRoutes"
+                                :key="index"
+                                :index="item.path">
+                        <template slot="title">
+                            <i class="iconfont" :class="item.meta.icon"></i>
+                            <span slot="title">{{item.meta.title}}</span>
+                        </template>
+                        <el-menu-item
+                            v-for="(el, idx) in item.children"
+                            :key="idx"
+                            :index="item.path + '/' + el.path">{{el.meta.title}}</el-menu-item>
+                    </el-submenu>
+                </el-menu>
+            </el-dialog>
+        </div>
+        <div class="passDialog">
+            <el-dialog title="修改密码" :visible.sync="dialogPass" width="40%">
+                <el-form :model="passForm" :rules="rules" ref="passForm">
+                    <el-form-item label="旧密码" prop="oldPassword">
+                        <el-input type="password" v-model="passForm.oldPassword"></el-input>
+                    </el-form-item>
+                    <el-form-item label="新密码" prop="newPassword">
+                        <el-input type="password" v-model="passForm.newPassword"></el-input>
+                    </el-form-item>
+                    <el-form-item label="重复密码" prop="repeatPassword">
+                        <el-input type="password" v-model="passForm.repeatPassword"></el-input>
+                    </el-form-item>
+                </el-form>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="dialogPass = false">取 消</el-button>
+                    <el-button type="primary" @click="dialogPass = false">确 定</el-button>
+                </span>
+            </el-dialog>
+        </div>
     </el-col>
 </el-row>
 </template>
 <script>
 export default {
   data(){
+      const validatePass = (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('请输入新密码'));
+        } else {
+          if (this.passForm.repeatPassword !== '') {
+            this.$refs.passForm.validateField('repeatPassword');
+          }
+          callback();
+        }
+      };
+      const validatePass2 = (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('请再次输入密码'));
+        } else if (value !== this.passForm.newPassword) {
+          callback(new Error('两次输入密码不一致!'));
+        } else {
+          callback();
+        }
+      };
     return{
         isCollapse:false,
         defaultOpen:[],
@@ -92,12 +140,29 @@ export default {
         mdLeft:4,
         smLeft:8,
         smRight:16,
-        dialogVisible:false
+        dialogVisible:false,
+        fullVal: 0,
+        dialogPass:false,
+        passForm:{
+            oldPassword:'',
+            newPassword:'',
+            repeatPassword:'',
+        },
+        rules:{
+            oldPassword:[
+                { required: true, message: '请输入旧密码', trigger: 'blur' },
+            ],
+            newPassword: [
+                { validator: validatePass, trigger: 'blur' }
+            ],
+            repeatPassword: [
+            { validator: validatePass2, trigger: 'blur' }
+            ],
+        }
     }
   },
   created(){
     this.defaultOpen.push(`/${this.$route.path.split('/')[1]}`)
-    //   console.log(this.defaultOpen)
     if (this.$route.name === 'appMenu') {
       this.$router.push({ name: 'member' })
     }
@@ -112,12 +177,6 @@ export default {
     });
   },
   methods:{
-    handleOpen(){
-
-    },
-    handleClose(){
-
-    },
     checkFold(val){
         if(val === 0){
             this.isCollapse = true
@@ -131,6 +190,37 @@ export default {
             this.mdLeft = 4
             this.smLeft = 8
             this.smRight = 16
+        }
+    },
+    // 点击全屏
+    fullScreen(){
+        this.fullVal = 1
+        let full = document.documentElement
+        if(full.requestFullscreen){
+            full.requestFullscreen()
+        }else if(full.mozRequestFullScreen){
+            full.mozRequestFullScreen()
+        } else if (full.webkitRequestFullScreen) {
+            full.webkitRequestFullScreen()
+        }
+    },
+    // 缩小
+    narrow(){
+        this.fullVal = 0
+        let docE = document
+         if (docE.exitFullscreen) {
+            docE.exitFullscreen()
+        } else if (docE.mozCancelFullScreen) {
+            docE.mozCancelFullScreen()
+        } else if (docE.webkitCancelFullScreen) {
+            docE.webkitCancelFullScreen()
+        }
+    },
+    command(val){
+        if(val === 'a'){
+            this.dialogPass = true
+        }else{
+            
         }
     }
   }
@@ -205,29 +295,46 @@ export default {
                 display: flex;
                 align-items: center;
                 cursor: pointer;
+                .iconfont{
+                    font-size: 20px;
+                    margin-right: 10px; 
+                }
                 img{
                     width: 40px;
                     height: 40px;
                     border-radius: 10px;
                     margin-right: 5px;
                 }
+                .el-dropdown{
+                    font-size: 16px;
+                    color: #f6ca9d;
+                }
             }
         }
-        /deep/.el-dialog{
-            margin: 0!important;
-            background: #1d1e23;
-            height: calc(100vh);
-            .el-dialog__body{
-                padding: 0;
-                .el-menu{
-                    border-right: 0px;
-                    width: auto;
-                    i{
-                        font-size: 18px;
-                        margin-right: 10px;
-                        font-weight: 600;
+        .dialogMenu{
+            /deep/.el-dialog{
+                margin: 0!important;
+                background: #1d1e23;
+                height: calc(100vh);
+                .el-dialog__body{
+                    padding: 0;
+                    .el-menu{
+                        border-right: 0px;
+                        width: auto;
+                        i{
+                            font-size: 18px;
+                            margin-right: 10px;
+                            font-weight: 600;
+                        }
                     }
                 }
+            }
+        }
+        .passDialog{
+            /deep/ .el-dialog{
+                 .el-dialog__footer{
+                     text-align: center
+                 }
             }
         }
     }
