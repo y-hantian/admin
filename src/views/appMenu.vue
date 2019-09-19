@@ -34,7 +34,8 @@
         <div class="header">
             <div class="xs_logo hidden-sm-and-up">
                 <img src="@/assets/logo2.png">
-                <i class="el-icon-s-unfold" @click="dialogVisible = true"></i>
+                <!-- <i class="el-icon-s-unfold" @click="dialogVisible = true"></i> -->
+                <i class="el-icon-s-unfold" @click="drawer = true"></i>
             </div>
             <div class="i-layout-header-trigger hidden-sm-and-down" >
                 <i v-if="!isCollapse" class="el-icon-s-fold" @click="checkFold(0)"></i>
@@ -57,36 +58,6 @@
             </div>
         </div>
         <router-view></router-view>
-        <!-- navMenu导航菜单 -->
-        <div class="dialogMenu">
-            <el-dialog class="dialogMenu" :visible.sync="dialogVisible" :show-close="false" width="60%">
-                <img src="@/assets/logo.png">
-                <el-menu
-                    :default-active="$route.path"
-                    :default-openeds="defaultOpen"
-                    :unique-opened="true"
-                    :router="true"
-                    :collapse="isCollapse"
-                    :hide-timeout='1000'
-                    class="el-menu-vertical-demo"
-                    background-color="#1D1E23"
-                    text-color="#fff"
-                    active-text-color="#f6ca9d">
-                    <el-submenu v-for="(item,index) in permissionRoutes"
-                                :key="index"
-                                :index="item.path">
-                        <template slot="title">
-                            <i class="iconfont" :class="item.meta.icon"></i>
-                            <span slot="title">{{item.meta.title}}</span>
-                        </template>
-                        <el-menu-item
-                            v-for="(el, idx) in item.children"
-                            :key="idx"
-                            :index="item.path + '/' + el.path">{{el.meta.title}}</el-menu-item>
-                    </el-submenu>
-                </el-menu>
-            </el-dialog>
-        </div>
         <div class="passDialog">
             <el-dialog title="修改密码" :visible.sync="dialogPass" width="40%">
                 <el-form :model="passForm" :rules="rules" ref="passForm">
@@ -106,6 +77,36 @@
                 </span>
             </el-dialog>
         </div>
+        <!-- 移动端导航 -->
+        <el-drawer :append-to-body="true" :modal-append-to-body="false" size="60%" :show-close="false" :visible.sync="drawer"      :direction="direction">
+            <div class="title">
+                <img src="@/assets/logo.png">
+            </div>
+            <el-menu
+                :default-active="$route.path"
+                :default-openeds="defaultOpen"
+                :unique-opened="true"
+                :router="true"
+                :collapse="isCollapse"
+                :hide-timeout='1000'
+                class="el-menu-vertical-demo"
+                background-color="#1D1E23"
+                text-color="#fff"
+                active-text-color="#f6ca9d">
+                <el-submenu v-for="(item,index) in permissionRoutes"
+                            :key="index"
+                            :index="item.path">
+                    <template slot="title">
+                        <i class="iconfont" :class="item.meta.icon"></i>
+                        <span slot="title">{{item.meta.title}}</span>
+                    </template>
+                    <el-menu-item
+                        v-for="(el, idx) in item.children"
+                        :key="idx"
+                        :index="item.path + '/' + el.path">{{el.meta.title}}</el-menu-item>
+                </el-submenu>
+            </el-menu>
+        </el-drawer>
     </el-col>
 </el-row>
 </template>
@@ -132,6 +133,8 @@ export default {
         }
       };
     return{
+        drawer:false,
+        direction:'ltr',
         isCollapse:false,
         defaultOpen:[],
         permissionRoutes:[],
@@ -216,6 +219,7 @@ export default {
             docE.webkitCancelFullScreen()
         }
     },
+    // 下拉菜单点击事件
     command(val){
         if(val === 'a'){
             this.dialogPass = true
@@ -246,6 +250,10 @@ export default {
         .el-menu{
             border-right: 0px;
             width: auto;
+            .el-menu-item{
+                min-width: 0;
+                padding: 0
+            }
             i{
                 font-size: 18px;
                 margin-right: 10px;
@@ -271,6 +279,9 @@ export default {
                 i{
                     font-size: 20px;
                     padding: 0 10px;
+                }
+                .el-drawer{
+                    background: #101117
                 }
             }
             .i-layout-header-trigger{
