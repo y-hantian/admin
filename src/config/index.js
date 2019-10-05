@@ -16,4 +16,3 @@ export const statusCode = {
     INVALID_FILE_TYPE: 3005 // 无效文件类型
   }
   // export const baseURL = 'http://192.168.132.113:90/api'
-  export const baseURL = 'http://vip.skbanyou.com/api'

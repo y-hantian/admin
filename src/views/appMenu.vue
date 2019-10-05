@@ -2,8 +2,11 @@
 <el-row class="container">
     <el-col :md="mdLeft" :sm="smLeft" :xs="0" class="aside">
         <div class="title">
-            <img  v-if="!isCollapse" src="@/assets/logo.png">
-            <img  v-else src="@/assets/logo2.png">
+            <div class="islogo" v-if="!isCollapse">
+                <img src="@/assets/logo.png">
+                <h2>logo</h2>
+            </div>
+            <img  v-else src="@/assets/logo.png">
         </div>
         <el-menu
             :default-active="$route.path"
@@ -33,7 +36,7 @@
     <el-col :md="mdRight" :sm="smRight" :xs="24" class="content">
         <div class="header">
             <div class="xs_logo hidden-sm-and-up">
-                <img src="@/assets/logo2.png">
+                <img src="@/assets/logo.png">
                 <!-- <i class="el-icon-s-unfold" @click="dialogVisible = true"></i> -->
                 <i class="el-icon-s-unfold" @click="drawer = true"></i>
             </div>
@@ -246,6 +249,19 @@ export default {
             justify-content: center;
             align-items: center;
             font-size: 18px;
+            .islogo{
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: left;
+                h2{
+                    font-size: 30px;
+                    font-family: serif;
+                }
+            }
+            img{
+                height: 65px;
+            }
         }
         .el-menu{
             border-right: 0px;
